@@ -18,7 +18,7 @@ export interface UprightResult {
   aspect?: number; // only set by Full mode
 }
 
-// ── Grayscale + blur ────────────────────────────────────────────────────────
+// ── Greyscale + blur ────────────────────────────────────────────────────────
 
 function toGrayscale(rgba: Uint8Array | Uint8ClampedArray, w: number, h: number): Float32Array {
   const gray = new Float32Array(w * h);
@@ -217,7 +217,7 @@ function houghLines(
     const minVotes = Math.max(10, Math.round(Math.sqrt(w * h) * 0.03));
     if (bestVal < minVotes) break;
 
-    // Sub-bin refinement: fit a parabola to the peak and its two neighbors in
+    // Sub-bin refinement: fit a parabola to the peak and its two neighbours in
     // each axis. Keystone correction hinges on sub-degree convergence angles,
     // far finer than the 0.5° bin; without this the angle snaps to the bin
     // centre and the vanishing point (and its sign) can be wrong. Offsets are
