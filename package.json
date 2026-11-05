@@ -1,7 +1,7 @@
 {
   "name": "safelight-transform",
   "private": true,
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Transform extension for Safelight: perspective, Upright and guided Upright.",
   "type": "module",
   "scripts": {

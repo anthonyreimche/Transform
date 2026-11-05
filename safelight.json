@@ -1,7 +1,7 @@
 {
   "id": "safelight.transform",
   "name": "Transform",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Perspective, stretch and Upright, with guided lines.",
   "author": "Anthony Reimche",
   "main": "dist/index.js",
