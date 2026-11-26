@@ -322,10 +322,10 @@ function T(e, t, n, r) {
 	}
 	return u;
 }
-function ee(e, t, n) {
+function E(e, t, n) {
 	return T(S(x(b(y(v(e, t, n), t, n), t, n)), t, n), t, n, 40);
 }
-function te(e, t, n) {
+function ee(e, t, n) {
 	if (e.length === 0) return {
 		horizontal: [],
 		vertical: []
@@ -348,7 +348,7 @@ function te(e, t, n) {
 		vertical: u
 	};
 }
-function E(e, t, n) {
+function D(e, t, n) {
 	let r = Math.cos(e.theta), i = Math.sin(e.theta), a = e.rho * r, o = e.rho * i, s = -i, c = r, l = Math.hypot(t, n);
 	return {
 		x1: (a - l * s) / t,
@@ -357,7 +357,7 @@ function E(e, t, n) {
 		y2: (o + l * c) / n
 	};
 }
-function D(e) {
+function te(e) {
 	let t = [];
 	for (let n = 0; n < e.length; n++) for (let r = n + 1; r < e.length; r++) {
 		let i = e[r].x - e[n].x;
@@ -386,7 +386,7 @@ function O(e, t) {
 			});
 		}
 	}
-	return n.length === 0 ? null : D(n);
+	return n.length === 0 ? null : te(n);
 }
 function k(e, t, n) {
 	let r = (e) => Math.max(-100, Math.min(100, e)), i = 0, a = 0, o = null, s = null;
@@ -422,7 +422,7 @@ function k(e, t, n) {
 	};
 }
 function ne(e, t, n, r) {
-	let { horizontal: i, vertical: a } = te(e, n, r), o = n / r, s = (e) => [...e].sort((e, t) => t.votes - e.votes).slice(0, 8), c = s(i).map((e) => E(e, n, r)), l = s(a).map((e) => E(e, n, r)), u = (e) => Math.max(-20, Math.min(20, e)), d = (e) => Math.max(-100, Math.min(100, e));
+	let { horizontal: i, vertical: a } = ee(e, n, r), o = n / r, s = (e) => [...e].sort((e, t) => t.votes - e.votes).slice(0, 8), c = s(i).map((e) => D(e, n, r)), l = s(a).map((e) => D(e, n, r)), u = (e) => Math.max(-20, Math.min(20, e)), d = (e) => Math.max(-100, Math.min(100, e));
 	switch (t) {
 		case "level": return {
 			straighten: u(k(c, [], o).straighten),
@@ -483,25 +483,25 @@ function N(e) {
 		for (let e of j) e();
 	}
 }
-var P = (e) => (j.add(e), () => void j.delete(e)), ie = () => e.useSyncExternalStore(P, M), F = "safelight.crop.options", I = {
+var P = (e) => (j.add(e), () => void j.delete(e)), F = () => e.useSyncExternalStore(P, M), I = "safelight.crop.options", L = {
 	constrain: !0,
 	aspect: -1
 };
-function L() {
-	t.variables.register(F, {
-		initial: I,
+function R() {
+	t.variables.register(I, {
+		initial: L,
 		description: "Crop & Straighten: whether a crop keeps inside the image, and its aspect lock."
 	});
 }
-var R = () => t.variables.get("safelight.crop.options")?.value ?? I, ae = (e) => void t.variables.update(F, (t) => ({
+var z = () => t.variables.get("safelight.crop.options")?.value ?? L, ie = (e) => void t.variables.update(I, (t) => ({
 	...t,
 	...e
 }));
-function oe() {
-	let [n, r] = e.useState(R);
-	return e.useEffect(() => t.variables.subscribe(F, (e) => r(e.value)), []), n;
+function ae() {
+	let [n, r] = e.useState(z);
+	return e.useEffect(() => t.variables.subscribe(I, (e) => r(e.value)), []), n;
 }
-function z() {
+function B() {
 	let { sourceSize: e } = t.stores.useDevelopStore.getState();
 	if (e.width > 0 && e.height > 0) return e.width / e.height;
 	let { photos: n, activePhotoId: r } = t.stores.useCatalogStore.getState(), i = n.find((e) => e.id === r);
@@ -509,32 +509,32 @@ function z() {
 }
 //#endregion
 //#region src/apply.ts
-function B(e, n) {
-	let { constrain: r, aspect: i } = R();
+function V(e, n) {
+	let { constrain: r, aspect: i } = z();
 	if (!r) return;
-	let a = z(), o = u(e, n, a);
+	let a = B(), o = u(e, n, a);
 	t.stores.useDevelopStore.getState().setParam("crop", _(o, i === -1 ? a : i, a));
 }
-function V(e) {
+function H(e) {
 	let { params: n, setParam: r } = t.stores.useDevelopStore.getState(), i = {
 		...n.transform,
 		perspectiveV: Math.round(e.perspectiveV),
 		perspectiveH: Math.round(e.perspectiveH),
 		...e.aspect == null ? {} : { aspect: Math.round(e.aspect) }
 	};
-	r("straighten", e.straighten), r("transform", i), B(e.straighten, i);
+	r("straighten", e.straighten), r("transform", i), V(e.straighten, i);
 }
-function H() {
-	let { guidedLines: e } = t.stores.useDevelopStore.getState().params, { straighten: n, perspectiveV: r, perspectiveH: i } = re(e, z());
-	V({
+function U() {
+	let { guidedLines: e } = t.stores.useDevelopStore.getState().params, { straighten: n, perspectiveV: r, perspectiveH: i } = re(e, B());
+	H({
 		straighten: n,
 		perspectiveV: r,
 		perspectiveH: i
 	});
 }
-async function se(e) {
+async function oe(e) {
 	let n = await t.develop.readDevelopedPixels(256);
-	return n ? ne(ee(n.data, n.width, n.height), e, n.width, n.height) : {
+	return n ? ne(E(n.data, n.width, n.height), e, n.width, n.height) : {
 		straighten: 0,
 		perspectiveV: 0,
 		perspectiveH: 0
@@ -542,14 +542,7 @@ async function se(e) {
 }
 //#endregion
 //#region src/GuidedLines.tsx
-function U(e, n, r) {
-	let i = t.stores.useSettings.getState().uiScale || 1;
-	return {
-		x: (n - e.left) / i,
-		y: (r - e.top) / i
-	};
-}
-var W = (e) => t.cursors.resolve(e), G = 14, ce = "rgba(255,255,255,0.85)", K = "#ffffff";
+var W = (e) => t.cursors.resolve(e), G = 14, se = "rgba(255,255,255,0.85)", K = "#ffffff";
 function q(e, t, n, r, a) {
 	let o = i(n, e, t), s = (o.x - a.x) / a.width, c = (o.y - a.y) / a.height;
 	return {
@@ -564,115 +557,105 @@ function J(e, t, n, r, a) {
 		ny: Math.max(0, Math.min(1, c.y))
 	};
 }
-function le({ rect: t, forward: n, inv: r, crop: i, lines: a, onChange: o, onCommit: s }) {
-	let c = e.useRef(null), l = e.useRef(null), u = e.useCallback((e) => {
-		let t = l.current;
-		if (t) {
-			let n = U(t.svgRect, e.clientX, e.clientY);
-			return {
-				sx: n.x,
-				sy: n.y
-			};
-		}
-		let n = c.current;
+function ce({ rect: n, forward: r, inv: i, crop: a, lines: o, onChange: s, onCommit: c }) {
+	let l = e.useRef(null), u = e.useRef(null), d = e.useCallback((e) => {
+		let n = l.current;
 		if (!n) return {
 			sx: 0,
 			sy: 0
 		};
-		let r = U(n.getBoundingClientRect(), e.clientX, e.clientY);
+		let r = t.develop.framePoint(n, e.clientX, e.clientY);
 		return {
 			sx: r.x,
 			sy: r.y
 		};
-	}, []), d = e.useCallback((e, r) => {
-		for (let o = 0; o < a.length; o++) {
-			let s = a[o], c = q(s.x1, s.y1, n, t, i), l = q(s.x2, s.y2, n, t, i);
-			if (Math.hypot(e - c.sx, r - c.sy) < G) return {
-				lineIdx: o,
+	}, []), f = e.useCallback((e, t) => {
+		for (let i = 0; i < o.length; i++) {
+			let s = o[i], c = q(s.x1, s.y1, r, n, a), l = q(s.x2, s.y2, r, n, a);
+			if (Math.hypot(e - c.sx, t - c.sy) < G) return {
+				lineIdx: i,
 				endpoint: "p1"
 			};
-			if (Math.hypot(e - l.sx, r - l.sy) < G) return {
-				lineIdx: o,
+			if (Math.hypot(e - l.sx, t - l.sy) < G) return {
+				lineIdx: i,
 				endpoint: "p2"
 			};
 		}
 		return null;
 	}, [
-		a,
+		o,
+		r,
 		n,
-		t,
-		i
-	]), f = e.useCallback((e) => {
+		a
+	]), p = e.useCallback((e) => {
 		e.preventDefault(), e.stopPropagation(), e.target.setPointerCapture(e.pointerId);
-		let n = c.current;
-		if (!n) return;
-		let s = n.getBoundingClientRect(), { x: u, y: f } = U(s, e.clientX, e.clientY), p = d(u, f);
+		let r = l.current;
+		if (!r) return;
+		let { x: c, y: d } = t.develop.framePoint(r, e.clientX, e.clientY), p = f(c, d);
 		if (p) {
-			let e = a[p.lineIdx];
-			l.current = {
+			let e = o[p.lineIdx];
+			u.current = {
 				lineIdx: p.lineIdx,
 				endpoint: p.endpoint,
-				svgRect: s,
 				origLine: { ...e }
 			};
 		} else {
-			let e = J(u, f, r, t, i), n = {
+			let e = J(c, d, i, n, a), t = {
 				x1: e.nx,
 				y1: e.ny,
 				x2: e.nx,
 				y2: e.ny
-			}, c = [...a, n];
-			o(c), l.current = {
-				lineIdx: c.length - 1,
+			}, r = [...o, t];
+			s(r), u.current = {
+				lineIdx: r.length - 1,
 				endpoint: "p2",
-				svgRect: s,
-				origLine: n
+				origLine: t
 			};
 		}
 	}, [
-		a,
-		t,
-		r,
-		i,
-		d,
-		o
-	]), p = e.useCallback((e) => {
-		if (!l.current) return;
-		e.preventDefault();
-		let { lineIdx: n, endpoint: s } = l.current, { sx: c, sy: d } = u(e), f = J(c, d, r, t, i), p = [...a], m = { ...p[n] };
-		s === "p1" ? (m.x1 = f.nx, m.y1 = f.ny) : (m.x2 = f.nx, m.y2 = f.ny), p[n] = m, o(p);
-	}, [
-		a,
-		t,
-		r,
-		i,
 		o,
-		u
-	]), m = e.useCallback((e) => {
-		if (!l.current) return;
-		e.target.releasePointerCapture(e.pointerId);
-		let { lineIdx: r } = l.current, c = a[r];
-		if (c) {
-			let e = q(c.x1, c.y1, n, t, i), s = q(c.x2, c.y2, n, t, i);
-			Math.hypot(s.sx - e.sx, s.sy - e.sy) < 10 && o(a.filter((e, t) => t !== r));
-		}
-		l.current = null, s();
-	}, [
-		a,
 		n,
-		t,
 		i,
-		o,
-		s
-	]), h = e.useCallback((e) => {
-		o(a.filter((t, n) => n !== e)), s();
-	}, [
 		a,
-		o,
+		f,
 		s
+	]), m = e.useCallback((e) => {
+		if (!u.current) return;
+		e.preventDefault();
+		let { lineIdx: t, endpoint: r } = u.current, { sx: c, sy: l } = d(e), f = J(c, l, i, n, a), p = [...o], m = { ...p[t] };
+		r === "p1" ? (m.x1 = f.nx, m.y1 = f.ny) : (m.x2 = f.nx, m.y2 = f.ny), p[t] = m, s(p);
+	}, [
+		o,
+		n,
+		i,
+		a,
+		s,
+		d
+	]), h = e.useCallback((e) => {
+		if (!u.current) return;
+		e.target.releasePointerCapture(e.pointerId);
+		let { lineIdx: t } = u.current, i = o[t];
+		if (i) {
+			let e = q(i.x1, i.y1, r, n, a), c = q(i.x2, i.y2, r, n, a);
+			Math.hypot(c.sx - e.sx, c.sy - e.sy) < 10 && s(o.filter((e, n) => n !== t));
+		}
+		u.current = null, c();
+	}, [
+		o,
+		r,
+		n,
+		a,
+		s,
+		c
+	]), g = e.useCallback((e) => {
+		s(o.filter((t, n) => n !== e)), c();
+	}, [
+		o,
+		s,
+		c
 	]);
 	return /* @__PURE__ */ e.createElement("svg", {
-		ref: c,
+		ref: l,
 		style: {
 			position: "absolute",
 			left: 0,
@@ -682,17 +665,17 @@ function le({ rect: t, forward: n, inv: r, crop: i, lines: a, onChange: o, onCom
 			pointerEvents: "all",
 			cursor: W("crosshair")
 		},
-		onPointerDown: f,
-		onPointerMove: p,
-		onPointerUp: m
-	}, a.map((r, a) => {
-		let o = q(r.x1, r.y1, n, t, i), s = q(r.x2, r.y2, n, t, i), c = (o.sx + s.sx) / 2, l = (o.sy + s.sy) / 2;
-		return /* @__PURE__ */ e.createElement("g", { key: a }, /* @__PURE__ */ e.createElement("line", {
+		onPointerDown: p,
+		onPointerMove: m,
+		onPointerUp: h
+	}, o.map((t, i) => {
+		let o = q(t.x1, t.y1, r, n, a), s = q(t.x2, t.y2, r, n, a), c = (o.sx + s.sx) / 2, l = (o.sy + s.sy) / 2;
+		return /* @__PURE__ */ e.createElement("g", { key: i }, /* @__PURE__ */ e.createElement("line", {
 			x1: o.sx,
 			y1: o.sy,
 			x2: s.sx,
 			y2: s.sy,
-			stroke: ce,
+			stroke: se,
 			strokeWidth: 2,
 			strokeLinecap: "round",
 			style: { pointerEvents: "none" }
@@ -721,7 +704,7 @@ function le({ rect: t, forward: n, inv: r, crop: i, lines: a, onChange: o, onCom
 		}), /* @__PURE__ */ e.createElement("g", {
 			style: { cursor: W("pointer") },
 			onClick: (e) => {
-				e.stopPropagation(), h(a);
+				e.stopPropagation(), g(i);
 			},
 			onPointerDown: (e) => e.stopPropagation()
 		}, /* @__PURE__ */ e.createElement("circle", {
@@ -743,9 +726,9 @@ function le({ rect: t, forward: n, inv: r, crop: i, lines: a, onChange: o, onCom
 				userSelect: "none"
 			}
 		}, "×")));
-	}), a.length === 0 && /* @__PURE__ */ e.createElement("text", {
-		x: t.x + t.w / 2,
-		y: t.y + t.h / 2,
+	}), o.length === 0 && /* @__PURE__ */ e.createElement("text", {
+		x: n.x + n.w / 2,
+		y: n.y + n.h / 2,
 		textAnchor: "middle",
 		fill: "rgba(255,255,255,0.6)",
 		fontSize: 12,
@@ -757,9 +740,9 @@ function le({ rect: t, forward: n, inv: r, crop: i, lines: a, onChange: o, onCom
 }
 //#endregion
 //#region src/GuidedCanvas.tsx
-function ue({ rect: n }) {
+function le({ rect: n }) {
 	let r = t.stores.useDevelopStore, i = r((e) => e.params.guidedLines), a = r((e) => e.params.straighten), o = r((e) => e.params.transform), s = r((e) => e.params.crop), c = r((e) => e.setParam), l = r((e) => e.commitEdit), f = r((e) => !!e.bypassedPanels["core.transform"]), { region: p, imageAspect: m } = t.develop.useDevelopOverlay();
-	return f ? null : /* @__PURE__ */ e.createElement(le, {
+	return f ? null : /* @__PURE__ */ e.createElement(ce, {
 		rect: n,
 		forward: d(a, o, m),
 		inv: u(a, o, m),
@@ -767,36 +750,23 @@ function ue({ rect: n }) {
 		lines: i,
 		onChange: (e) => c("guidedLines", e),
 		onCommit: () => {
-			H(), l("Guided Upright");
+			U(), l("Guided Upright");
 		}
 	});
 }
-var de = {
-	overlay: ue,
+var ue = {
+	overlay: le,
 	zoomable: !1,
 	onEscape: () => N(!1)
-}, Y = "safelight-transform", X = {
-	panel: `${Y}-panel`,
-	modes: `${Y}-modes`,
-	mode: `${Y}-mode`,
-	active: `${Y}-active`,
-	check: `${Y}-check`
-};
-function fe(e) {
+}, Y = { panel: "safelight-transform-panel" };
+function de() {
 	return `
-:where(.${X.panel} > :not(:last-child)) { margin-block: 0 0.125rem; }
-:where(.${X.modes}) { display: flex; gap: 0.125rem; margin-bottom: 0.25rem; }
-:where(.${X.mode}) { flex: 1 1 0%; border-radius: 0.25rem; padding: 0.125rem 0.25rem; font-size: 10px; background-color: ${e.surface2}; color: ${e.textSecondary}; }
-:where(.${X.mode}:hover) { background-color: ${e.surface3}; color: ${e.textPrimary}; }
-:where(.${X.mode}.${X.active}) { background-color: ${e.accent}; color: ${e.textPrimary}; }
-:where(.${X.check}) { display: flex; align-items: center; gap: 0.375rem; padding-top: 0.25rem; font-size: 11px; color: ${e.textSecondary}; }
-:where(.${X.check} input) { accent-color: ${e.sliderFill}; }
-html.sl-larger-text .${X.mode} { font-size: 12px !important; }
+:where(.${Y.panel} > :not(:last-child)) { margin-block: 0 0.125rem; }
 `;
 }
 //#endregion
 //#region src/TransformPanel.tsx
-var pe = [
+var X = [
 	{
 		mode: "off",
 		label: "Off"
@@ -821,7 +791,7 @@ var pe = [
 		mode: "guided",
 		label: "Guided"
 	}
-], me = [
+], fe = [
 	{
 		key: "perspectiveV",
 		label: "Vertical"
@@ -835,83 +805,88 @@ var pe = [
 		label: "Aspect"
 	}
 ];
-function he() {
-	let { Panel: n, Slider: r } = t.components, i = t.stores.useDevelopStore, a = i((e) => e.params.transform), o = i((e) => e.params.uprightMode), s = i((e) => e.setParam), c = i((e) => e.commitEdit), l = ie(), { constrain: u } = oe(), [d, f] = e.useState(!1), p = (e, t) => {
-		let { params: n } = i.getState(), r = {
+function pe() {
+	let { Panel: n, Slider: r } = t.components, { SegmentedControl: i, Toggle: a } = t.ui, o = t.stores.useDevelopStore, s = o((e) => e.params.transform), c = o((e) => e.params.uprightMode), l = o((e) => e.setParam), u = o((e) => e.commitEdit), d = F(), f = t.develop.useCanvasToolHeld();
+	e.useEffect(() => {
+		d && !f && N(!1);
+	}, [d, f]);
+	let { constrain: p } = ae(), m = e.useRef(!1), h = (e, t) => {
+		let { params: n } = o.getState(), r = {
 			...n.transform,
 			[e]: t
 		};
-		s("transform", r), B(n.straighten, r);
-	}, m = async (e) => {
+		l("transform", r), V(n.straighten, r);
+	}, g = async (e) => {
+		if (m.current) return;
 		if (e === "off") {
-			N(!1), s("uprightMode", "off"), V({
+			N(!1), l("uprightMode", "off"), H({
 				straighten: 0,
 				perspectiveV: 0,
 				perspectiveH: 0,
 				aspect: 0
-			}), c("Upright off");
+			}), u("Upright off");
 			return;
 		}
 		if (e === "guided") {
-			let e = o === "guided" && l;
-			s("uprightMode", "guided"), N(!e), H(), c("Guided Upright");
+			let e = c === "guided" && d;
+			l("uprightMode", "guided"), N(!e), U(), u("Guided Upright");
 			return;
 		}
-		let t = o;
-		N(!1), s("uprightMode", e), f(!0);
+		let t = c;
+		N(!1), l("uprightMode", e), m.current = !0;
 		try {
-			V(await se(e)), c(`Upright ${e}`);
+			H(await oe(e)), u(`Upright ${e}`);
 		} catch (e) {
-			s("uprightMode", t), console.error("[upright]", e);
+			l("uprightMode", t), console.error("[upright]", e);
 		} finally {
-			f(!1);
+			m.current = !1;
 		}
 	};
 	return /* @__PURE__ */ e.createElement(n, {
 		title: "Transform",
 		defaultOpen: !1
-	}, /* @__PURE__ */ e.createElement("div", { className: X.panel }, /* @__PURE__ */ e.createElement("div", { className: X.modes }, pe.map((t) => {
-		let n = o === t.mode, r = t.mode === "guided" && n && l ? "Done" : t.label;
-		return /* @__PURE__ */ e.createElement("button", {
-			key: t.mode,
-			type: "button",
-			disabled: d,
-			onClick: () => void m(t.mode),
-			"aria-pressed": n,
-			className: `${X.mode}${n ? ` ${X.active}` : ""}`
-		}, r);
-	})), me.map((t) => /* @__PURE__ */ e.createElement(r, {
+	}, /* @__PURE__ */ e.createElement("div", { className: Y.panel }, /* @__PURE__ */ e.createElement(i, {
+		size: "sm",
+		value: c,
+		onChange: (e) => {
+			let t = X.find((t) => t.mode === e);
+			t && g(t.mode);
+		},
+		options: X.map((e) => ({
+			value: e.mode,
+			label: e.mode === "guided" && c === "guided" && d ? "Done" : e.label
+		}))
+	}), fe.map((t) => /* @__PURE__ */ e.createElement(r, {
 		key: t.key,
 		label: t.label,
-		value: a[t.key],
+		value: s[t.key],
 		min: -100,
 		max: 100,
 		step: 1,
-		onChange: (e) => p(t.key, e),
-		onCommit: () => void c("Transform")
-	})), /* @__PURE__ */ e.createElement("label", { className: X.check }, /* @__PURE__ */ e.createElement("input", {
-		type: "checkbox",
-		checked: u,
+		onChange: (e) => h(t.key, e),
+		onCommit: () => void u("Transform")
+	})), /* @__PURE__ */ e.createElement(a, {
+		label: "Constrain crop",
+		checked: p,
 		onChange: (e) => {
-			let t = e.target.checked;
-			if (ae({ constrain: t }), t) {
-				let { params: e } = i.getState();
-				B(e.straighten, e.transform), c("Constrain crop");
+			if (ie({ constrain: e }), e) {
+				let { params: e } = o.getState();
+				V(e.straighten, e.transform), u("Constrain crop");
 			}
 		}
-	}), "Constrain crop")));
+	})));
 }
 //#endregion
 //#region src/index.tsx
 var Z = "core.transform", Q = "safelight.transform.styles", $ = [];
-function ge(e) {
-	n(e), N(!1), L(), e.registerStylesheet({
+function me(e) {
+	n(e), N(!1), R(), e.registerStylesheet({
 		id: Q,
-		css: fe(e.ui.tokens)
+		css: de()
 	}), e.registerPanel({
 		id: Z,
 		title: "Transform",
-		component: he,
+		component: pe,
 		defaultDock: {
 			module: "develop",
 			direction: "right",
@@ -919,6 +894,7 @@ function ge(e) {
 			width: 280,
 			height: 320
 		},
+		modules: ["develop"],
 		onReset: () => {
 			N(!1), e.stores.useDevelopStore.getState().resetParams([
 				"transform",
@@ -929,7 +905,7 @@ function ge(e) {
 		}
 	});
 	for (let e of $) e();
-	$ = [P(() => e.develop.setCanvasTool(M() ? de : null)), e.stores.useDevelopStore.subscribe((e) => {
+	$ = [P(() => e.develop.setCanvasTool(M() ? ue : null)), e.stores.useDevelopStore.subscribe((e) => {
 		M() && e.params.uprightMode !== "guided" && N(!1);
 	})];
 	let t = (t, n) => () => {
@@ -953,11 +929,11 @@ function ge(e) {
 		handler: t("flipV", "Flip vertical")
 	});
 }
-function _e() {
+function he() {
 	for (let e of $) e();
 	$ = [], N(!1);
 }
 //#endregion
-export { Z as PANEL_ID, Q as STYLESHEET_ID, ge as activate, _e as deactivate };
+export { Z as PANEL_ID, Q as STYLESHEET_ID, me as activate, he as deactivate };
 
 //# sourceMappingURL=index.js.map

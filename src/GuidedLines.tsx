@@ -12,14 +12,6 @@ import { React, api } from "./rt";
 import type { CropRect, GuidedLine } from "./safelight";
 import { mat3Apply, type Mat3 } from "./transform";
 
-// Pointer position in an element's local LAYOUT pixels, the space the lines
-// are drawn in: Preferences ▸ Interface scale zooms <body>, and under CSS zoom
-// clientX and getBoundingClientRect() are in zoomed visual pixels.
-function frameLocalPoint(rect: { left: number; top: number }, clientX: number, clientY: number) {
-  const z = api.stores.useSettings.getState().uiScale || 1;
-  return { x: (clientX - rect.left) / z, y: (clientY - rect.top) / z };
-}
-
 const resolveCursorCss = (token: string) => api.cursors.resolve(token);
 
 interface Rect {
@@ -67,7 +59,6 @@ export function GuidedLines({ rect, forward, inv, crop, lines, onChange, onCommi
   const dragRef = React.useRef<{
     lineIdx: number;
     endpoint: "p1" | "p2";
-    svgRect: DOMRect;
     origLine: GuidedLine;
   } | null>(null);
 
@@ -75,17 +66,9 @@ export function GuidedLines({ rect, forward, inv, crop, lines, onChange, onCommi
 
   const getLocalCoords = React.useCallback(
     (e: ReactPointerEvent) => {
-      // frameLocalPoint maps into layout px, undoing the <body> UI-scale zoom
-      // that otherwise drifts the dragged endpoints (see frame-point.ts).
-      const dr = dragRef.current;
-      if (dr) {
-        const p = frameLocalPoint(dr.svgRect, e.clientX, e.clientY);
-        return { sx: p.x, sy: p.y };
-      }
       const svg = svgRef.current;
       if (!svg) return { sx: 0, sy: 0 };
-      const r = svg.getBoundingClientRect();
-      const p = frameLocalPoint(r, e.clientX, e.clientY);
+      const p = api.develop.framePoint(svg, e.clientX, e.clientY);
       return { sx: p.x, sy: p.y };
     },
     [],
@@ -113,8 +96,7 @@ export function GuidedLines({ rect, forward, inv, crop, lines, onChange, onCommi
 
       const svg = svgRef.current;
       if (!svg) return;
-      const svgRect = svg.getBoundingClientRect();
-      const { x: sx, y: sy } = frameLocalPoint(svgRect, e.clientX, e.clientY);
+      const { x: sx, y: sy } = api.develop.framePoint(svg, e.clientX, e.clientY);
       const hit = hitTest(sx, sy);
 
       if (hit) {
@@ -122,7 +104,6 @@ export function GuidedLines({ rect, forward, inv, crop, lines, onChange, onCommi
         dragRef.current = {
           lineIdx: hit.lineIdx,
           endpoint: hit.endpoint,
-          svgRect,
           origLine: { ...line },
         };
       } else {
@@ -138,7 +119,6 @@ export function GuidedLines({ rect, forward, inv, crop, lines, onChange, onCommi
         dragRef.current = {
           lineIdx: newLines.length - 1,
           endpoint: "p2",
-          svgRect,
           origLine: newLine,
         };
       }

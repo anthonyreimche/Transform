@@ -51,6 +51,7 @@ describe("activate", () => {
         title: "Transform",
         component: TransformPanel,
         defaultDock: { module: "develop", direction: "right", order: 2, width: 280, height: 320 },
+        modules: ["develop"],
         onReset: expect.any(Function),
       },
     ]);
@@ -100,6 +101,27 @@ describe("Upright", () => {
     }
     return { data, width: w, height: h };
   };
+
+  it("is the kit's segmented control, holding the photo's mode", () => {
+    setParams({ uprightMode: "vertical" });
+    const view = render(<TransformPanel />);
+    const options = [...view.container.querySelectorAll("[data-segmented] button")];
+    expect(options.map((b) => b.textContent)).toEqual(["Off", "Level", "Vert", "Auto", "Full", "Guided"]);
+    expect(options.filter((b) => b.getAttribute("data-active") === "true").map((b) => b.textContent)).toEqual(["Vert"]);
+  });
+
+  it("reads the frame once for presses made while it reads", async () => {
+    deactivate();
+    cleanup();
+    start({ developed: tilted() });
+    render(<TransformPanel />);
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Auto" }));
+      fireEvent.click(screen.getByRole("button", { name: "Full" }));
+    });
+    expect(rig.reads).toEqual([256]);
+    expect(params().uprightMode).toBe("auto");
+  });
 
   it("reads the developed frame at 256 px and applies the correction it detects", async () => {
     deactivate();
@@ -157,6 +179,14 @@ describe("Upright", () => {
     expect(params().uprightMode).toBe("guided");
   });
 
+  it("closes the guided lines when another tool or a picker takes the canvas, keeping guided", async () => {
+    render(<TransformPanel />);
+    await press("Guided");
+    act(() => rig.takeCanvas());
+    expect(guidedEditing()).toBe(false);
+    expect(params().uprightMode).toBe("guided");
+  });
+
   it("closes the guided lines on Escape, keeping guided", async () => {
     render(<TransformPanel />);
     await press("Guided");
@@ -200,7 +230,7 @@ describe("the sliders", () => {
     act(() => setCropOptions({ constrain: false }));
     setParams({ straighten: 5 });
     render(<TransformPanel />);
-    fireEvent.click(screen.getByRole("checkbox", { name: "Constrain crop" }));
+    fireEvent.click(screen.getByRole("switch", { name: "Constrain crop" }));
     expect(rig.api.variables.get(OPTIONS)?.value).toEqual({ constrain: true, aspect: -1 });
     expect(params().crop).toEqual(fitted(5, DEFAULT_TRANSFORM));
     expect(rig.calls.at(-1)).toEqual({ commitEdit: "Constrain crop" });
@@ -222,6 +252,22 @@ describe("the guided lines on the canvas", () => {
     const want = computeGuidedCorrection(params().guidedLines, 1.5);
     expect(params().straighten).toBe(want.straighten);
     expect(rig.calls.at(-1)).toEqual({ commitEdit: "Guided Upright" });
+  });
+
+  it("reads the pointer in the frame's layout px under Interface scale", () => {
+    rig.overlay.setState({ region: { x: 0, y: 0, width: 1, height: 1 }, imageAspect: 1.5 });
+    setParams({ uprightMode: "guided" });
+    rig.setFrameZoom(2);
+    const view = render(<GuidedCanvas rect={RECT} />);
+    const svg = view.container.querySelector("svg")!;
+    fireEvent.pointerDown(svg, { pointerId: 1, button: 0, clientX: 120, clientY: 80 });
+    fireEvent.pointerMove(svg, { pointerId: 1, buttons: 1, clientX: 160, clientY: 720 });
+    fireEvent.pointerUp(svg, { pointerId: 1, clientX: 160, clientY: 720 });
+    const [line] = params().guidedLines;
+    expect(line.x1).toBeCloseTo(60 / 600);
+    expect(line.y1).toBeCloseTo(40 / 400);
+    expect(line.x2).toBeCloseTo(80 / 600);
+    expect(line.y2).toBeCloseTo(360 / 400);
   });
 
   it("hides while the Transform panel's preview-off eye is held", () => {

@@ -30,14 +30,21 @@ const SLIDERS: { key: "perspectiveV" | "perspectiveH" | "aspect"; label: string 
 
 export function TransformPanel() {
   const { Panel, Slider } = api.components;
+  const { SegmentedControl, Toggle } = api.ui;
   const useDevelopStore = api.stores.useDevelopStore;
   const transform = useDevelopStore((s) => s.params.transform);
   const uprightMode = useDevelopStore((s) => s.params.uprightMode);
   const setParam = useDevelopStore((s) => s.setParam);
   const commitEdit = useDevelopStore((s) => s.commitEdit);
   const guidedEditing = useGuidedEditing();
+  const held = api.develop.useCanvasToolHeld();
+
+  // Another tool or a picker took the canvas: the guided lines are closed.
+  React.useEffect(() => {
+    if (guidedEditing && !held) setGuidedEditing(false);
+  }, [guidedEditing, held]);
   const { constrain } = useCropOptions();
-  const [analyzing, setAnalyzing] = React.useState(false);
+  const reading = React.useRef(false);
 
   const onChange = (key: keyof TransformParams, v: number) => {
     const { params } = useDevelopStore.getState();
@@ -47,6 +54,7 @@ export function TransformPanel() {
   };
 
   const applyUpright = async (mode: UprightMode) => {
+    if (reading.current) return;
     if (mode === "off") {
       // Clear the upright correction: zero the sliders it drives and reset tilt.
       setGuidedEditing(false);
@@ -69,7 +77,7 @@ export function TransformPanel() {
     const prevMode = uprightMode;
     setGuidedEditing(false);
     setParam("uprightMode", mode);
-    setAnalyzing(true);
+    reading.current = true;
     try {
       applyCorrection(await detectUpright(mode));
       void commitEdit(`Upright ${mode}`);
@@ -79,32 +87,26 @@ export function TransformPanel() {
       setParam("uprightMode", prevMode);
       console.error("[upright]", err);
     } finally {
-      setAnalyzing(false);
+      reading.current = false;
     }
   };
 
   return (
     <Panel title="Transform" defaultOpen={false}>
       <div className={cls.panel}>
-        <div className={cls.modes}>
-          {UPRIGHT_MODES.map((u) => {
-            const active = uprightMode === u.mode;
+        <SegmentedControl
+          size="sm"
+          value={uprightMode}
+          onChange={(mode) => {
+            const picked = UPRIGHT_MODES.find((u) => u.mode === mode);
+            if (picked) void applyUpright(picked.mode);
+          }}
+          options={UPRIGHT_MODES.map((u) => ({
+            value: u.mode,
             // While the guided overlay is open the button finishes editing.
-            const label = u.mode === "guided" && active && guidedEditing ? "Done" : u.label;
-            return (
-              <button
-                key={u.mode}
-                type="button"
-                disabled={analyzing}
-                onClick={() => void applyUpright(u.mode)}
-                aria-pressed={active}
-                className={`${cls.mode}${active ? ` ${cls.active}` : ""}`}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
+            label: u.mode === "guided" && uprightMode === "guided" && guidedEditing ? "Done" : u.label,
+          }))}
+        />
 
         {SLIDERS.map((s) => (
           <Slider
@@ -119,26 +121,22 @@ export function TransformPanel() {
           />
         ))}
 
-        <label className={cls.check}>
-          <input
-            type="checkbox"
-            checked={constrain}
-            onChange={(e) => {
-              const on = e.target.checked;
-              setCropOptions({ constrain: on });
-              if (on) {
-                // Re-enabling constrain must pull the crop back inside the
-                // image: while it was off the crop could be rotated or dragged
-                // into the margins, leaving handles out of bounds, and the
-                // next drag would collapse it to a sliver.
-                const { params } = useDevelopStore.getState();
-                fitCrop(params.straighten, params.transform);
-                void commitEdit("Constrain crop");
-              }
-            }}
-          />
-          Constrain crop
-        </label>
+        <Toggle
+          label="Constrain crop"
+          checked={constrain}
+          onChange={(on) => {
+            setCropOptions({ constrain: on });
+            if (on) {
+              // Re-enabling constrain must pull the crop back inside the
+              // image: while it was off the crop could be rotated or dragged
+              // into the margins, leaving handles out of bounds, and the
+              // next drag would collapse it to a sliver.
+              const { params } = useDevelopStore.getState();
+              fitCrop(params.straighten, params.transform);
+              void commitEdit("Constrain crop");
+            }
+          }}
+        />
       </div>
     </Panel>
   );

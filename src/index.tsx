@@ -25,12 +25,13 @@ export function activate(host: SafelightAPI): void {
   initRuntime(host);
   setGuidedEditing(false);
   registerOptions();
-  host.registerStylesheet({ id: STYLESHEET_ID, css: transformCss(host.ui.tokens) });
+  host.registerStylesheet({ id: STYLESHEET_ID, css: transformCss() });
   host.registerPanel({
     id: PANEL_ID,
     title: "Transform",
     component: TransformPanel,
     defaultDock: { module: "develop", direction: "right", order: 2, width: 280, height: 320 },
+    modules: ["develop"],
     onReset: () => {
       setGuidedEditing(false);
       void host.stores.useDevelopStore

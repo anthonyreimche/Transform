@@ -1,7 +1,7 @@
 {
   "id": "safelight.transform",
   "name": "Transform",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "description": "Perspective, stretch and Upright, with guided lines.",
   "author": "Anthony Reimche",
   "main": "dist/index.js",
@@ -23,5 +23,5 @@
     "anthonyreimche/Develop",
     "anthonyreimche/crop-and-straighten"
   ],
-  "minAppVersion": "3.2.0"
+  "minAppVersion": "3.2.8"
 }

@@ -5,13 +5,13 @@
 
 // The slice of Safelight's extension API this extension touches, mirrored from
 // the app's src/extensions/types.ts, src/extensions/develop-host.tsx,
-// src/catalog/types.ts, src/state/{develop-store,catalog-store,settings-store}.ts,
-// src/modules/develop/canvas-tool.ts, src/rendering/render-worker.ts and
-// src/ui/components/{Panel,Slider}.tsx.
+// src/catalog/types.ts, src/state/{develop-store,catalog-store}.ts,
+// src/modules/develop/canvas-tool.ts, src/rendering/render-worker.ts,
+// src/ui/components/{Panel,Slider}.tsx and src/extensions/ui-kit.tsx.
 // Extensions are standalone bundles, so the host's source is not on the type
 // path; React types come from @types/react (dev only).
 
-import type { ComponentType, ReactNode } from "react";
+import type { ComponentType, JSX, ReactNode } from "react";
 
 /** A release line: the process version its stage text was written for, and
  *  the extension's major version. */
@@ -82,11 +82,6 @@ export interface CatalogStoreState {
   activePhotoId: string | null;
 }
 
-export interface SettingsState {
-  /** Preferences ▸ Interface scale: the CSS zoom on the app's body. */
-  uiScale: number;
-}
-
 export interface PanelDockDefault {
   module: "library" | "develop";
   direction: "left" | "right" | "bottom";
@@ -101,6 +96,8 @@ export interface PanelContribution {
   title: string;
   component: ComponentType;
   defaultDock?: PanelDockDefault;
+  /** The modules the panel may be docked in; omitted, every module (Safelight 3.2.8). */
+  modules?: readonly string[];
   /** Right-clicking the panel's dock header offers "Reset to defaults". */
   onReset?: () => void;
 }
@@ -136,17 +133,25 @@ export interface SettingsContribution {
   fields: SettingsSelectField[];
 }
 
-/** The theme's CSS variables as `var(--color-…)` strings. */
-export interface UiTokens {
-  readonly accent: string;
-  readonly surface2: string;
-  readonly surface3: string;
-  readonly surface4: string;
-  readonly textPrimary: string;
-  readonly textSecondary: string;
-  readonly textMuted: string;
-  readonly sliderFill: string;
-  readonly white: string;
+export interface ToggleProps {
+    checked: boolean;
+    onChange: (checked: boolean) => void;
+    /** Optional inline label shown before the switch. */
+    label?: ReactNode;
+    ariaLabel?: string;
+}
+
+export interface SegmentedOption {
+    value: string;
+    label: ReactNode;
+    title?: string;
+}
+
+export interface SegmentedControlProps {
+    value: string;
+    onChange: (value: string) => void;
+    options: SegmentedOption[];
+    size?: "sm" | "md";
 }
 
 export interface PanelProps {
@@ -239,7 +244,6 @@ export interface SafelightAPI {
   stores: {
     useDevelopStore: StoreApi<DevelopStoreState>;
     useCatalogStore: StoreApi<CatalogStoreState>;
-    useSettings: StoreApi<SettingsState>;
   };
   develop: {
     /** React hook: the canvas mapping, for an overlay. */
@@ -251,13 +255,24 @@ export interface SafelightAPI {
     /** The open photo's developed frame of the whole image, untransformed and
      *  uncropped, at `edge` px on its long edge; null without a frame. */
     readDevelopedPixels(edge: number): Promise<DevelopedPixels | null>;
+    /** The pointer in `el`'s layout px: the space an overlay's `rect`, the
+     *  mapping helpers and CSS left/top use. Interface scale zooms the page,
+     *  so clientX minus the element's left is off by the zoom. Needs Safelight
+     *  3.2.7. */
+    framePoint(el: Element, clientX: number, clientY: number): {
+        x: number;
+        y: number;
+    };
   };
   cursors: {
     /** A cursor token's CSS cursor value, as the theme draws it. */
     resolve(token: string): string;
   };
   variables: SharedVariablesAPI;
-  ui: { tokens: UiTokens };
+  ui: {
+    Toggle: (props: ToggleProps) => JSX.Element;
+    SegmentedControl: (props: SegmentedControlProps) => JSX.Element;
+  };
 }
 
 export interface ExtensionModule {
